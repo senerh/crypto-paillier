@@ -1,4 +1,4 @@
-import rsa.RSA;
+import paillier.Paillier;
 import speaker.Speaker;
 
 import java.math.BigInteger;
@@ -6,10 +6,10 @@ import java.math.BigInteger;
 public class Main {
 
 	public static void main(String[] args) {
-		Speaker speakerBob = new Speaker("Bob", new RSA());
-		Speaker speakerAlice = new Speaker("Alice", new RSA());
+		Speaker speakerBob = new Speaker("Bob", new Paillier());
+		Speaker speakerAlice = new Speaker("Alice", new Paillier());
 
-		speakerBob.sendEncrypted(speakerAlice, new BigInteger("1994"));
+		speakerBob.sendPaillier(speakerAlice, new BigInteger("36200"));
 	}
 
 }
