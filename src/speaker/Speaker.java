@@ -1,30 +1,37 @@
 package speaker;
 
-import paillier.InterfacePaillier;
+import paillier.Paillier;
 
 import java.math.BigInteger;
-import java.util.Random;
 
 public class Speaker {
 
     private String name;
-    private InterfacePaillier paillier;
+    private Paillier paillier;
     private BigInteger m;
-    private Random random;
+    private BigInteger c;
 
-    public Speaker(String name, InterfacePaillier paillier) {
+    public Speaker(String name, Paillier paillier) {
         this.name = name;
         this.paillier = paillier;
-        this.random = new Random();
+    }
+
+    public BigInteger getM() {
+        return m;
+    }
+
+    public BigInteger getC() {
+        return c;
     }
 
     public void receive(BigInteger m) {
-        System.out.println(name + " received : " + m);
         this.m = m;
+        System.out.println(name + " received : " + m);
     }
 
-    private void receivePaillier(BigInteger c, BigInteger sk, BigInteger n) {
-        receive(decrypt(c, sk, n));
+    public void receivePaillier(BigInteger c, Paillier paillier) {
+        this.c = c;
+        receive(paillier.decrypt(c));
     }
 
     public void send(Speaker receiver, BigInteger m) {
@@ -33,36 +40,9 @@ public class Speaker {
     }
 
     public void sendPaillier(Speaker receiver, BigInteger m) {
-        BigInteger encryptedM = encrypt(m, paillier.getN());
-        System.out.println(name + " -> " + receiver.name + " : " + encryptedM);
-        receiver.receivePaillier(encryptedM, paillier.getSK(), paillier.getN());
-    }
-
-    private BigInteger encrypt(BigInteger m, BigInteger n) {
-        BigInteger n_p1 = n.add(BigInteger.ONE);
-        BigInteger n_2 = n.multiply(n);
-        BigInteger n_p1_exp_m = n_p1.modPow(m, n_2);
-        BigInteger r = randomBigInteger(n);
-        BigInteger r_exp_n = r.modPow(n, n_2);
-        BigInteger c = n_p1_exp_m.multiply(r_exp_n).mod(n_2);
-        return c;
-    }
-
-    private BigInteger decrypt(BigInteger c, BigInteger sk, BigInteger n) {
-        BigInteger n_inv = n.modInverse(sk);
-        BigInteger r = c.modPow(n_inv, n);
-        BigInteger n_2 = n.multiply(n);
-        BigInteger m = c.multiply(r.modPow(n.negate(), n_2)).mod(n_2).subtract(BigInteger.ONE).divide(n);
-        return m;
-    }
-
-    private BigInteger randomBigInteger(BigInteger n) {
-        int maxNumBitLength = n.bitLength();
-        BigInteger aRandomBigInt;
-        do {
-            aRandomBigInt = new BigInteger(maxNumBitLength, random);
-        } while (aRandomBigInt.compareTo(n) > 0);
-        return aRandomBigInt;
+        BigInteger c = paillier.encrypt(m);
+        System.out.println(name + " -> " + receiver.name + " : " + c);
+        receiver.receivePaillier(c, paillier);
     }
 
 }
